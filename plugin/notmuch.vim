@@ -252,7 +252,7 @@ endfunction
 
 function! s:show_cursor_moved()
 ruby << EOF
-	if $render.is_ready?
+	if !$render.nil? && $render.is_ready?
 		VIM::command('setlocal modifiable')
 		$render.do_next
 		VIM::command('setlocal nomodifiable')
@@ -651,16 +651,28 @@ ruby << EOF
 
 		$render = $curbuf.render_staged(t) do |b, items|
 			items.each do |e|
-				authors = e.authors.to_utf8.split(/[,|]/).map { |a| author_filter(a) }.join(",")
-				date = Time.at(e.newest_date).strftime(date_fmt)
-				subject = e.messages.first['subject']
-				if $mail_installed
-					subject = Mail::Field.new("Subject: " + subject).to_s
-				else
-					subject = subject.force_encoding('utf-8')
+				begin
+					authors = e.authors.to_utf8.split(/[,|]/).map { |a| author_filter(a) }.join(",")
+					date = Time.at(e.newest_date).strftime(date_fmt)
+					subject = e.messages.first['subject']
+					if $mail_installed
+						subject = Mail::Field.parse("Subject: " + subject).to_s
+					else
+						subject = subject.force_encoding('utf-8')
+					end
+					b << "%-12s %3s %-20.20s | %s (%s)" % [date, e.matched_messages, authors, subject, e.tags]
+					$threads << e.thread_id
+				rescue => ex
+					date = Time.at(e.newest_date).strftime(date_fmt)
+					subject = e.messages.first['subject']
+					if $mail_installed
+						subject = Mail::Field.parse("Subject: " + subject).to_s
+					else
+						subject = subject.force_encoding('utf-8')
+					end
+					b << "%-12s %3s %-20.20s | %s (%s)" % [date, e.matched_messages, authors, subject, e.tags]
+					$threads << e.thread_id
 				end
-				b << "%-12s %3s %-20.20s | %s (%s)" % [date, e.matched_messages, authors, subject, e.tags]
-				$threads << e.thread_id
 			end
 		end
 	end
