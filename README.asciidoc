@@ -1,3 +1,12 @@
+== Attention ==
+
+This is a fork of the notmuch-vim repo which wasn't updated for 4 years.
+Everything in this README except this part is as old as Roger Murtaugh.
+You can try it, but just use your plugin manager not the instructions here.
+It is fixed really really badly (nearly as bad as my spelling and grammar)
+and until now only a test. 
+
+
 == notmuch vim ==
 
 This is a vim plug-in that provides a fully usable mail client interface,
